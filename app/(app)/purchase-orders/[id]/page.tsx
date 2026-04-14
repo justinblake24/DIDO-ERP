@@ -44,17 +44,28 @@ export default async function PODetailPage({ params }: Props) {
 
   return (
     <div>
-      {/* Back + Header */}
-      <div className="flex items-center gap-4 mb-6">
-        <Link href="/purchase-orders">
-          <button className="flex items-center gap-2 text-sm px-3 py-2 rounded-xl transition-all"
-            style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid var(--border)', color: 'var(--text-muted)' }}>
-            <ArrowLeft className="w-4 h-4" />
-            목록으로
-          </button>
-        </Link>
-        <div className="flex-1">
-          <div className="flex items-center gap-3">
+      {/* Back + Header - 모바일 세로 스택 */}
+      <div className="mb-6">
+        {/* 순 1: 목록버튼 + 수정버튼 */}
+        <div className="flex items-center justify-between mb-3">
+          <Link href="/purchase-orders">
+            <button className="flex items-center gap-2 text-sm px-3 py-2 rounded-xl transition-all"
+              style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid var(--border)', color: 'var(--text-muted)' }}>
+              <ArrowLeft className="w-4 h-4" />
+              <span className="btn-label-hide">목록으로</span>
+            </button>
+          </Link>
+          <Link href={`/purchase-orders/${id}/edit`}>
+            <button id="edit-po-button" className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm"
+              style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid var(--border)', color: 'var(--text-muted)' }}>
+              <Edit className="w-4 h-4" />
+              수정
+            </button>
+          </Link>
+        </div>
+        {/* 순 2: PO 정보 */}
+        <div>
+          <div className="flex items-center gap-3 flex-wrap">
             <h1 className="text-xl font-bold mono" style={{ color: 'var(--accent)' }}>
               {po.poNumber}
             </h1>
@@ -64,13 +75,6 @@ export default async function PODetailPage({ params }: Props) {
             {getCountryFlag(po.vendor.country)} {po.vendor.name} · {formatDate(po.issueDate)}
           </div>
         </div>
-        <Link href={`/purchase-orders/${id}/edit`}>
-          <button id="edit-po-button" className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm"
-            style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid var(--border)', color: 'var(--text-muted)' }}>
-            <Edit className="w-4 h-4" />
-            수정
-          </button>
-        </Link>
       </div>
 
       {/* Status Flow */}
@@ -81,7 +85,7 @@ export default async function PODetailPage({ params }: Props) {
         <POStatusFlow status={po.status} />
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '20px', marginBottom: '20px' }}>
+      <div className="detail-grid" style={{ marginBottom: '20px' }}>
         {/* PO Info */}
         <div className="glass-card p-5">
           <div className="flex items-center gap-2 mb-4">
@@ -214,7 +218,8 @@ export default async function PODetailPage({ params }: Props) {
               </td>
             </tr>
           </tfoot>
-        </table>
+        </div>
+        </div>
       </div>
 
       {/* Payments */}

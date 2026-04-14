@@ -365,11 +365,45 @@ body {
   margin-bottom: 24px;
 }
 
+.vendor-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+/* PO 상세: 발주정보(2fr) + 금액요약(1fr) */
+.detail-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 20px;
+}
+
 /* 테이블 모바일 스크롤 */
 .erp-table-wrap {
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
 }
+
+/* erp-table 자체도 overflow */
+.glass-card .erp-table {
+  min-width: 500px;
+}
+
+/* 테이블 모바일 스크롤 */
+.erp-table-wrap {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* 상태 필터 가로 스크롤 (모바일) */
+.filter-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  white-space: nowrap;
+  padding-bottom: 4px;
+}
+.filter-scroll::-webkit-scrollbar { display: none; }
 
 /* ===== 모바일 (768px 미만) ===== */
 @media (max-width: 767px) {
@@ -386,6 +420,17 @@ body {
     gap: 16px;
   }
 
+  /* 발주처: 2열 */
+  .vendor-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+
+  /* PO 상세 카드: 1열 */
+  .detail-grid {
+    grid-template-columns: 1fr;
+  }
+
   /* 카드 패딩 축소 */
   .glass-card {
     padding: 14px !important;
@@ -400,6 +445,16 @@ body {
 
   /* main 패딩 */
   main { padding: 16px 12px !important; }
+
+  /* 페이지 타이틀 row */
+  .page-header {
+    flex-direction: column;
+    align-items: flex-start !important;
+    gap: 12px;
+  }
+
+  /* 툴바 버튼 레이블 숨김 */
+  .btn-label-hide { display: none; }
 }
 
 /* 태블릿 (768px ~ 1023px) */
@@ -409,5 +464,8 @@ body {
   }
   .chart-grid {
     grid-template-columns: 1fr;
+  }
+  .vendor-grid {
+    grid-template-columns: repeat(2, 1fr);
   }
 }

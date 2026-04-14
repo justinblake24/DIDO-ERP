@@ -84,8 +84,8 @@ export default function Header({ user }: HeaderProps) {
       zIndex: 50,
       transition: 'background 0.3s ease',
     }}>
-      {/* Search */}
-      <div className="flex-1 max-w-md relative">
+      {/* Search - 데스크탑만 */}
+      <div className="hidden md:flex flex-1 max-w-md relative">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4"
           style={{ color: 'var(--text-subtle)' }} />
         <input
@@ -99,14 +99,14 @@ export default function Header({ user }: HeaderProps) {
 
       <div className="flex-1" />
 
-      {/* Realtime indicator */}
-      <div className="flex items-center gap-2">
+      {/* Realtime indicator - 데스크탑만 */}
+      <div className="hidden md:flex items-center gap-2">
         <div className="pulse-dot" />
         <span className="text-xs" style={{ color: 'var(--text-muted)' }}>실시간 동기화</span>
       </div>
 
-      {/* Time */}
-      <div className="text-xs mono" style={{ color: 'var(--text-subtle)' }} suppressHydrationWarning>
+      {/* Time - 데스크탑만 */}
+      <div className="hidden md:block text-xs mono" style={{ color: 'var(--text-subtle)' }} suppressHydrationWarning>
         {time.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
       </div>
 

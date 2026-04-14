@@ -29,7 +29,7 @@ export default async function VendorsPage() {
         </button>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px' }}>
+      <div className="vendor-grid">
         {vendors.map((vendor) => (
           <div key={vendor.id} className="glass-card p-5">
             <div className="flex items-start justify-between mb-3">

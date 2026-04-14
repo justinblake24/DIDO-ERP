@@ -84,8 +84,8 @@ export default async function PurchaseOrdersPage({ searchParams }: Props) {
           </form>
         </div>
 
-        {/* Status filters */}
-        <div className="flex items-center gap-1 flex-wrap">
+        {/* Status filters - 모바일 가로 스크롤 */}
+        <div className="filter-scroll flex items-center gap-1">
           {STATUS_FILTERS.map((f) => (
             <Link
               key={f.value}
@@ -110,7 +110,7 @@ export default async function PurchaseOrdersPage({ searchParams }: Props) {
 
         <div style={{ flex: 1 }} />
 
-        {/* Actions */}
+        {/* Actions - 모바일은 아이콘만 */}
         <button
           id="export-button"
           className="flex items-center gap-2 px-3 py-2 rounded-xl text-sm transition-all duration-150"
@@ -121,7 +121,7 @@ export default async function PurchaseOrdersPage({ searchParams }: Props) {
           }}
         >
           <Download className="w-4 h-4" />
-          Export
+          <span className="btn-label-hide">Export</span>
         </button>
         <Link href="/purchase-orders/import">
           <button
@@ -134,13 +134,13 @@ export default async function PurchaseOrdersPage({ searchParams }: Props) {
             }}
           >
             <Upload className="w-4 h-4" />
-            Import
+            <span className="btn-label-hide">Import</span>
           </button>
         </Link>
         <Link href="/purchase-orders/new">
           <button id="new-po-button" className="btn-gold flex items-center gap-2 text-sm">
             <Plus className="w-4 h-4" />
-            신규 발주
+            <span>신규 발주</span>
           </button>
         </Link>
       </div>
@@ -185,55 +185,85 @@ export default async function PurchaseOrdersPage({ searchParams }: Props) {
 
             return (
               <Link key={po.id} href={`/purchase-orders/${po.id}`}>
-                <div className="glass-card p-4 flex items-center gap-4 cursor-pointer"
-                  style={{ borderRadius: '12px' }}>
-                  {/* PO Number */}
-                  <div style={{ minWidth: '200px' }}>
+                <div className="glass-card p-4 cursor-pointer" style={{ borderRadius: '12px' }}>
+
+                  {/* 모바일: 2행 / 데스크탑: 1행 */}
+                  {/* 행 1: PO번호 + 상태 */}
+                  <div className="flex items-center justify-between mb-2 md:mb-0 md:hidden">
                     <div className="mono text-sm font-semibold" style={{ color: 'var(--accent)' }}>
                       {po.poNumber}
                     </div>
-                    <div className="text-xs mt-0.5 mono" style={{ color: 'var(--text-subtle)' }}>
-                      {formatDate(po.issueDate)}
-                    </div>
+                    <POStatusBadge status={po.status} />
                   </div>
 
-                  {/* Vendor */}
-                  <div style={{ width: '200px' }}>
+                  {/* 행 2: 발주처 + 금액 */}
+                  <div className="flex items-center justify-between md:hidden">
                     <div className="flex items-center gap-2">
                       <span className="text-base">{getCountryFlag(po.vendor.country)}</span>
-                      <span className="text-sm font-medium truncate" style={{ color: 'var(--text-primary)' }}>
+                      <span className="text-sm font-medium truncate" style={{ color: 'var(--text-primary)', maxWidth: '150px' }}>
                         {po.vendor.name}
                       </span>
                     </div>
+                    {krwTotal > 0 && (
+                      <div className="mono text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>
+                        {formatKRW(krwTotal)}
+                      </div>
+                    )}
                   </div>
 
-                  {/* Items */}
-                  <div style={{ flex: 1 }}>
-                    <div className="text-sm truncate" style={{ color: 'var(--text-muted)' }}>
-                      {po.items[0]?.productName}
-                      {po._count.items > 1 && (
-                        <span className="ml-1 text-xs px-1.5 py-0.5 rounded"
-                          style={{ background: 'rgba(255,255,255,0.06)', color: 'var(--text-subtle)' }}>
-                          외 {po._count.items - 1}건
+                  {/* 品목 (모바일) */}
+                  <div className="mt-1 md:hidden text-xs" style={{ color: 'var(--text-subtle)' }}>
+                    {po.items[0]?.productName}
+                    {po._count.items > 1 && ` 외 ${po._count.items - 1}건`}
+                    <span className="ml-2 mono">{formatDate(po.issueDate)}</span>
+                  </div>
+
+                  {/* 데스크탑: 기존 1행 레이아웃 */}
+                  <div className="hidden md:flex items-center gap-4">
+                    {/* PO Number */}
+                    <div style={{ minWidth: '200px' }}>
+                      <div className="mono text-sm font-semibold" style={{ color: 'var(--accent)' }}>
+                        {po.poNumber}
+                      </div>
+                      <div className="text-xs mt-0.5 mono" style={{ color: 'var(--text-subtle)' }}>
+                        {formatDate(po.issueDate)}
+                      </div>
+                    </div>
+                    {/* Vendor */}
+                    <div style={{ width: '200px' }}>
+                      <div className="flex items-center gap-2">
+                        <span className="text-base">{getCountryFlag(po.vendor.country)}</span>
+                        <span className="text-sm font-medium truncate" style={{ color: 'var(--text-primary)' }}>
+                          {po.vendor.name}
                         </span>
-                      )}
+                      </div>
                     </div>
+                    {/* Items */}
+                    <div style={{ flex: 1 }}>
+                      <div className="text-sm truncate" style={{ color: 'var(--text-muted)' }}>
+                        {po.items[0]?.productName}
+                        {po._count.items > 1 && (
+                          <span className="ml-1 text-xs px-1.5 py-0.5 rounded"
+                            style={{ background: 'rgba(255,255,255,0.06)', color: 'var(--text-subtle)' }}>
+                            외 {po._count.items - 1}건
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    {/* Amount */}
+                    {krwTotal > 0 && (
+                      <div className="mono text-sm font-medium" style={{ color: 'var(--text-primary)', minWidth: '120px', textAlign: 'right' }}>
+                        {formatKRW(krwTotal)}
+                      </div>
+                    )}
+                    {/* Progress */}
+                    <div style={{ width: '80px' }}>
+                      <POStatusFlow status={po.status} compact />
+                    </div>
+                    {/* Status */}
+                    <POStatusBadge status={po.status} />
                   </div>
 
-                  {/* Amount */}
-                  {krwTotal > 0 && (
-                    <div className="mono text-sm font-medium" style={{ color: 'var(--text-primary)', minWidth: '120px', textAlign: 'right' }}>
-                      {formatKRW(krwTotal)}
-                    </div>
-                  )}
-
-                  {/* Progress */}
-                  <div style={{ width: '80px' }}>
-                    <POStatusFlow status={po.status} compact />
-                  </div>
-
-                  {/* Status */}
-                  <POStatusBadge status={po.status} />
                 </div>
               </Link>
             )
