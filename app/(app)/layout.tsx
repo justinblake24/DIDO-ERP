@@ -4,7 +4,7 @@ export const dynamic = 'force-dynamic'
 import { redirect } from 'next/navigation'
 import { createServerSupabaseClient } from '@/lib/supabase-server'
 import { prisma } from '@/lib/prisma'
-import Sidebar from '@/components/shared/Sidebar'
+import AppShell from '@/components/shared/AppShell'
 import Header from '@/components/shared/Header'
 
 export default async function AppLayout({
@@ -38,21 +38,8 @@ export default async function AppLayout({
   }
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', background: 'var(--bg-primary)' }}>
-      <Sidebar />
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-        <Header user={dbUser} />
-        <main style={{
-          flex: 1,
-          overflow: 'auto',
-          padding: '32px 24px',
-          maxWidth: '1280px',
-          width: '100%',
-          margin: '0 auto',
-        }}>
-          {children}
-        </main>
-      </div>
-    </div>
+    <AppShell header={<Header user={dbUser} />}>
+      {children}
+    </AppShell>
   )
 }

@@ -349,3 +349,65 @@ body {
 [data-sonner-toaster] {
   font-family: 'Noto Sans KR', 'Inter', sans-serif !important;
 }
+
+/* ===== 반응형 그리드 ===== */
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.chart-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  margin-bottom: 24px;
+}
+
+/* 테이블 모바일 스크롤 */
+.erp-table-wrap {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* ===== 모바일 (768px 미만) ===== */
+@media (max-width: 767px) {
+  /* KPI: 2열 */
+  .kpi-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+
+  /* 차트: 1열 */
+  .chart-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  /* 카드 패딩 축소 */
+  .glass-card {
+    padding: 14px !important;
+  }
+
+  /* 폰트 사이즈 조정 */
+  .text-2xl { font-size: 1.25rem !important; }
+  .text-xl  { font-size: 1.1rem  !important; }
+
+  /* 헤더 높이 */
+  header { height: 52px !important; padding: 0 12px !important; }
+
+  /* main 패딩 */
+  main { padding: 16px 12px !important; }
+}
+
+/* 태블릿 (768px ~ 1023px) */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .kpi-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .chart-grid {
+    grid-template-columns: 1fr;
+  }
+}

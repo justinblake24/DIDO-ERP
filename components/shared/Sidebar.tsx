@@ -24,7 +24,7 @@ const settingsItems = [
   { href: '/settings/users', icon: Users, label: '사용자 관리' },
 ]
 
-export default function Sidebar() {
+export default function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = usePathname()
   const router = useRouter()
   const supabase = createClient()
@@ -67,7 +67,7 @@ export default function Sidebar() {
           const Icon = item.icon
           const active = isActive(item.href)
           return (
-            <Link key={item.href} href={item.href}>
+            <Link key={item.href} href={item.href} onClick={onNavigate}>
               <div className={`sidebar-item ${active ? 'active' : ''}`}>
                 <Icon className="w-4 h-4 flex-shrink-0" />
                 <span className="flex-1 text-sm">{item.label}</span>
@@ -86,7 +86,7 @@ export default function Sidebar() {
           const Icon = item.icon
           const active = isActive(item.href)
           return (
-            <Link key={item.href} href={item.href}>
+            <Link key={item.href} href={item.href} onClick={onNavigate}>
               <div className={`sidebar-item ${active ? 'active' : ''}`}>
                 <Icon className="w-4 h-4 flex-shrink-0" />
                 <span className="flex-1 text-sm">{item.label}</span>

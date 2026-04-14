@@ -127,7 +127,7 @@ export default async function DashboardPage() {
       </div>
 
       {/* KPI Cards */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '16px', marginBottom: '24px' }}>
+      <div className="kpi-grid">
         {/* 이번 분기 발주액 */}
         <div className="glass-card p-5">
           <div className="flex items-center justify-between mb-3">
@@ -212,7 +212,7 @@ export default async function DashboardPage() {
       </div>
 
       {/* Charts + Recent */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px', marginBottom: '24px' }}>
+      <div className="chart-grid">
         <DashboardCharts />
 
         {/* Recent Audit Logs */}
