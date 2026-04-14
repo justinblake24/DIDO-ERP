@@ -1,36 +1,116 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Edu-ERP Lite
 
-## Getting Started
+> **P/O 발행관리 웹 ERP** — 수입/수출 거래를 관리하는 소규모 기업용 웹 ERP
 
-First, run the development server:
+## 🚀 기술 스택
+
+- **Framework**: Next.js 16 (App Router) + TypeScript
+- **Styling**: Tailwind CSS 4 + Custom CSS Variables
+- **Database**: PostgreSQL (Supabase)
+- **ORM**: Prisma 7
+- **Auth**: Supabase Auth (Email + Magic Link)
+- **AI**: Google Gemini API (이상치 탐지)
+- **Charts**: Recharts
+- **Excel**: ExcelJS (Import/Export)
+
+## ⚡ 빠른 시작
+
+### 1. Supabase 프로젝트 준비
+
+1. [supabase.com](https://supabase.com)에서 무료 프로젝트 생성
+2. Project Settings → Database에서 Connection String 복사
+
+### 2. 환경변수 설정
+
+```bash
+cp .env.example .env.local
+```
+
+`.env.local`에 아래 값을 입력하세요:
+
+```
+NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
+DATABASE_URL=your-transaction-pooler-url
+DIRECT_URL=your-direct-url
+```
+
+### 3. 의존성 설치 및 DB 설정
+
+```bash
+npm install
+npm run db:generate     # Prisma 클라이언트 생성
+npm run db:push         # DB 스키마 적용
+npm run db:seed         # 시드 데이터 삽입 (12건 실제 PO)
+```
+
+### 4. 개발 서버 실행
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+→ [http://localhost:3000](http://localhost:3000) 에서 확인
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 🔐 기본 계정
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+시드 후 아래 이메일로 Supabase Auth에서 사용자를 생성하세요:
 
-## Learn More
+| 이메일 | 역할 |
+|--------|------|
+| justin@eduwill.net | ADMIN |
+| sehee@eduwill.net | MANAGER |
+| jinkyung@eduwill.net | OPERATOR |
+| hyejin@eduwill.net | OPERATOR |
+| viewer@eduwill.net | VIEWER |
 
-To learn more about Next.js, take a look at the following resources:
+## 📄 주요 기능
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### Phase 1 (현재)
+- ✅ 인증 (Magic Link + 비밀번호)
+- ✅ PO CRUD + 발주번호 자동생성
+- ✅ 엑셀 Import (기존 양식 자동 파싱)
+- ✅ 대시보드 + KPI 차트
+- ✅ 상태 워크플로우 (DRAFT→ISSUED→PAID→SHIPPED→INVOICED→COMPLETED)
+- ✅ 감사 로그 자동 기록
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### Phase 2 (예정)
+- 결제/청구/입금 모듈
+- 한국은행 환율 API 연동
+- Gemini AI 이상치 탐지
+- 엑셀 Export
 
-## Deploy on Vercel
+## 🗂️ 라우팅
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```
+/login                          로그인
+/                               대시보드
+/purchase-orders                P/O 발행대장
+/purchase-orders/new            신규 PO 작성
+/purchase-orders/[id]           PO 상세
+/purchase-orders/[id]/edit      PO 수정
+/purchase-orders/import         엑셀 Import
+/vendors                        발주처 관리
+/invoices                       청구 관리
+/reports                        리포트
+/audit                          감사 로그
+/settings/users                 사용자 관리
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## 🚀 Vercel 배포
+
+```bash
+npx vercel --prod
+```
+
+Vercel 환경변수에 `.env.local`과 동일한 값 설정 필요.
+
+## 📊 발주번호 규칙
+
+- **수입**: `DHPO-(I)YYMMDDM-XXX` (예: `DHPO-(I)260412M-009`)
+- **국내**: `DHPO-YYMMDD-XXX®` (예: `DHPO-260412-010®`)
+- `XXX`: 해당 연도 일련번호 (001부터, 매년 리셋)
+
+---
+
+© 2026 Eduwill. 내부 전용 시스템.

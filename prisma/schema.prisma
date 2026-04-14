@@ -1,0 +1,160 @@
+// prisma/schema.prisma
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String
+  role      UserRole @default(OPERATOR)
+  avatarUrl String?
+  createdAt DateTime @default(now())
+
+  pos       PurchaseOrder[] @relation("CreatedBy")
+  auditLogs AuditLog[]
+}
+
+enum UserRole {
+  VIEWER
+  OPERATOR
+  MANAGER
+  ADMIN
+}
+
+model Vendor {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  country   String
+  currency  String
+  contact   String?
+  email     String?
+  memo      String?
+  active    Boolean  @default(true)
+  pos       PurchaseOrder[]
+  createdAt DateTime @default(now())
+}
+
+model PurchaseOrder {
+  id           String    @id @default(cuid())
+  poNumber     String    @unique
+  issueDate    DateTime
+  vendor       Vendor    @relation(fields: [vendorId], references: [id])
+  vendorId     String
+  status       POStatus  @default(DRAFT)
+  remarks      String?
+  cancelReason String?
+
+  items    POItem[]
+  payments Payment[]
+  invoices Invoice[]
+
+  createdBy   User     @relation("CreatedBy", fields: [createdById], references: [id])
+  createdById String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([issueDate, status])
+  @@index([vendorId])
+}
+
+enum POStatus {
+  DRAFT
+  ISSUED
+  PAID
+  SHIPPED
+  INVOICED
+  COMPLETED
+  CANCELLED
+}
+
+model POItem {
+  id            String        @id @default(cuid())
+  po            PurchaseOrder @relation(fields: [poId], references: [id], onDelete: Cascade)
+  poId          String
+  productName   String
+  specification String?
+  quantity      Decimal
+  unit          String
+  unitPrice     Decimal
+  currency      String
+  totalAmount   Decimal
+  sortOrder     Int           @default(0)
+}
+
+model Payment {
+  id          String        @id @default(cuid())
+  po          PurchaseOrder @relation(fields: [poId], references: [id], onDelete: Cascade)
+  poId        String
+  installment Int
+  ratio       Decimal
+  payDate     DateTime
+  currency    String
+  amount      Decimal
+  fxRate      Decimal?
+  amountKRW   Decimal?
+  taxInvoice  String?
+  approved    Boolean       @default(false)
+  approvedBy  String?
+  approvedAt  DateTime?
+}
+
+model Invoice {
+  id           String        @id @default(cuid())
+  po           PurchaseOrder @relation(fields: [poId], references: [id], onDelete: Cascade)
+  poId         String
+  invoiceNo    String        @unique
+  invoiceDate  DateTime
+  unitPriceJPY Decimal
+  totalJPY     Decimal
+  ratio        Decimal
+  deposits     Deposit[]
+}
+
+model Deposit {
+  id          String   @id @default(cuid())
+  invoice     Invoice  @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  invoiceId   String
+  depositDate DateTime
+  amountJPY   Decimal
+  fxRate      Decimal
+  amountKRW   Decimal
+}
+
+model AuditLog {
+  id        String      @id @default(cuid())
+  table     String
+  recordId  String
+  action    AuditAction
+  before    Json?
+  after     Json?
+  user      User        @relation(fields: [userId], references: [id])
+  userId    String
+  ipAddress String?
+  createdAt DateTime    @default(now())
+
+  @@index([table, recordId])
+  @@index([createdAt])
+}
+
+enum AuditAction {
+  CREATE
+  UPDATE
+  DELETE
+  STATUS_CHANGE
+  LOGIN
+  EXPORT
+}
+
+model FxRate {
+  id      String   @id @default(cuid())
+  date    DateTime @unique
+  usdKrw  Decimal
+  jpyKrw  Decimal
+  source  String   @default("BOK")
+  fetched DateTime @default(now())
+}
