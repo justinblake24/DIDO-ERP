@@ -43,7 +43,7 @@ export default async function AuditPage() {
             </tr>
           </thead>
           <tbody>
-            {logs.map((log) => {
+            {logs.map((log: (typeof logs)[number]) => {
               const action = ACTION_LABELS[log.action] || { label: log.action, color: 'var(--text-muted)' }
               return (
                 <tr key={log.id}>
