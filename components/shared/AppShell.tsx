@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Sidebar from './Sidebar'
-import { Menu, X } from 'lucide-react'
+import { Menu, X, Monitor } from 'lucide-react'
 
 interface AppShellProps {
   children: React.ReactNode
@@ -11,8 +11,15 @@ interface AppShellProps {
 
 export default function AppShell({ children, header }: AppShellProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [isMobile, setIsMobile] = useState(false)
 
-  // 화면 크기 변경 시 데스크탑이면 사이드바 닫기
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 768)
+    check()
+    window.addEventListener('resize', check)
+    return () => window.removeEventListener('resize', check)
+  }, [])
+
   useEffect(() => {
     const handler = () => {
       if (window.innerWidth >= 768) setSidebarOpen(false)
@@ -21,70 +28,77 @@ export default function AppShell({ children, header }: AppShellProps) {
     return () => window.removeEventListener('resize', handler)
   }, [])
 
-  // 사이드바 열릴 때 스크롤 잠금
   useEffect(() => {
     document.body.style.overflow = sidebarOpen ? 'hidden' : ''
     return () => { document.body.style.overflow = '' }
   }, [sidebarOpen])
 
-  return (
-    <div style={{ display: 'flex', minHeight: '100vh', background: 'var(--bg-primary)' }}>
-
-      {/* ===== 데스크탑 사이드바 ===== */}
-      <div className="hidden md:block">
-        <Sidebar />
-      </div>
-
-      {/* ===== 모바일 오버레이 ===== */}
-      {sidebarOpen && (
-        <div
-          className="fixed inset-0 z-40 md:hidden"
-          style={{ background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)' }}
-          onClick={() => setSidebarOpen(false)}
-        />
-      )}
-
-      {/* ===== 모바일 드로어 사이드바 ===== */}
-      <div
-        className="fixed top-0 left-0 h-full z-50 md:hidden transition-transform duration-300"
-        style={{
-          transform: sidebarOpen ? 'translateX(0)' : 'translateX(-100%)',
-          width: '240px',
-        }}
-      >
-        {/* 닫기 버튼 */}
-        <button
-          onClick={() => setSidebarOpen(false)}
-          className="absolute top-4 right-4 z-10 p-1.5 rounded-lg"
-          style={{ background: 'var(--bg-card)', color: 'var(--text-muted)' }}
-        >
-          <X className="w-4 h-4" />
-        </button>
-        <Sidebar onNavigate={() => setSidebarOpen(false)} />
-      </div>
-
-      {/* ===== 메인 영역 ===== */}
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', minWidth: 0 }}>
-
-        {/* 모바일 햄버거 버튼을 헤더에 주입 */}
-        <div className="flex items-center">
-          <button
-            className="md:hidden p-4 flex-shrink-0"
-            onClick={() => setSidebarOpen(true)}
-            aria-label="메뉴 열기"
-            style={{ color: 'var(--text-primary)' }}
-          >
-            <Menu className="w-5 h-5" />
-          </button>
-          <div className="flex-1 min-w-0">
-            {header}
-          </div>
+  // ===== 모바일 차단 화면 =====
+  if (isMobile) {
+    return (
+      <div style={{
+        minHeight: '100vh',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        background: 'var(--bg-primary)',
+        padding: '24px',
+        textAlign: 'center',
+      }}>
+        {/* 아이콘 */}
+        <div style={{
+          width: '72px',
+          height: '72px',
+          borderRadius: '20px',
+          background: 'var(--accent-dim)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          marginBottom: '24px',
+        }}>
+          <Monitor style={{ width: '32px', height: '32px', color: 'var(--accent)' }} />
         </div>
 
+        {/* 로고 */}
+        <div style={{ fontSize: '22px', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '8px' }}>
+          DIDO ERP
+        </div>
+
+        {/* 안내 메시지 */}
+        <div style={{ fontSize: '15px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '12px' }}>
+          데스크탑에서 이용해주세요
+        </div>
+        <div style={{ fontSize: '13px', color: 'var(--text-muted)', lineHeight: '1.6', maxWidth: '280px' }}>
+          DIDO ERP는 PC 환경에 최적화되어 있습니다.<br />
+          태블릿 또는 데스크탑 브라우저로 접속해주세요.
+        </div>
+
+        {/* 구분선 */}
+        <div style={{
+          width: '40px',
+          height: '2px',
+          background: 'var(--accent)',
+          margin: '24px auto',
+          borderRadius: '2px',
+        }} />
+
+        <div style={{ fontSize: '11px', color: 'var(--text-subtle)' }}>
+          권장 해상도: 1280px 이상
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div style={{ display: 'flex', minHeight: '100vh', background: 'var(--bg-primary)' }}>
+      <Sidebar />
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', minWidth: 0 }}>
+        {header}
         <main style={{
           flex: 1,
           overflow: 'auto',
-          padding: 'clamp(16px, 4vw, 32px) clamp(12px, 4vw, 24px)',
+          padding: '32px 24px',
           maxWidth: '1280px',
           width: '100%',
           margin: '0 auto',
