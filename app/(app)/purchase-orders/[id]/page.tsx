@@ -218,8 +218,7 @@ export default async function PODetailPage({ params }: Props) {
               </td>
             </tr>
           </tfoot>
-        </div>
-        </div>
+        </table>
       </div>
 
       {/* Payments */}
