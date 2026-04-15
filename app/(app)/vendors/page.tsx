@@ -1,7 +1,8 @@
 // app/(app)/vendors/page.tsx
 import { prisma } from '@/lib/prisma'
 import { getCountryFlag, formatDate } from '@/lib/utils'
-import { Building2, Plus } from 'lucide-react'
+import { Building2 } from 'lucide-react'
+import NewVendorButton from './NewVendorButton'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = { title: '발주처 관리' }
@@ -23,10 +24,7 @@ export default async function VendorsPage() {
             발주처 관리
           </h1>
         </div>
-        <button id="new-vendor-btn" className="btn-gold flex items-center gap-2 text-sm">
-          <Plus className="w-4 h-4" />
-          신규 발주처
-        </button>
+        <NewVendorButton />
       </div>
 
       <div className="vendor-grid">

@@ -17,7 +17,7 @@ const CURRENCIES = ['KRW', 'USD', 'JPY']
 export default function POEditForm({ po, vendors }: { po: any; vendors: Vendor[] }) {
   const router = useRouter()
   const [selectedVendorId, setSelectedVendorId] = useState(po.vendorId)
-  const [issueDate, setIssueDate] = useState(po.issueDate.toISOString().slice(0, 10))
+  const [issueDate, setIssueDate] = useState(String(po.issueDate).slice(0, 10))
   const [remarks, setRemarks] = useState(po.remarks || '')
   const [items, setItems] = useState<Item[]>(
     po.items.map((i: any) => ({
