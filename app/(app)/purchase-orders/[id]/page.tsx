@@ -3,7 +3,7 @@ import { prisma } from '@/lib/prisma'
 import { notFound } from 'next/navigation'
 import { formatDate, formatCurrency, formatKRW, getCountryFlag, STATUS_LABELS } from '@/lib/utils'
 import Link from 'next/link'
-import { ArrowLeft, Edit, Package, CreditCard, FileText, Clock, ExternalLink } from 'lucide-react'
+import { ArrowLeft, Edit, Package, CreditCard, FileText, Clock, Receipt } from 'lucide-react'
 import POStatusBadge from '@/components/po/POStatusBadge'
 import POStatusFlow from '@/components/po/POStatusFlow'
 import type { Metadata } from 'next'
@@ -260,6 +260,64 @@ export default async function PODetailPage({ params }: Props) {
                   </td>
                 </tr>
               ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      {/* 일본 청구 내역 */}
+      {po.invoices.length > 0 && (
+        <div className="glass-card p-5 mb-5">
+          <div className="flex items-center gap-2 mb-4">
+            <Receipt className="w-4 h-4" style={{ color: 'var(--status-invoiced, #a78bfa)' }} />
+            <h2 className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>
+              일본 청구 내역 ({po.invoices.length}건)
+            </h2>
+          </div>
+          <table className="erp-table">
+            <thead>
+              <tr>
+                <th>청구번호</th>
+                <th>청구일</th>
+                <th style={{ textAlign: 'right' }}>합계 (JPY)</th>
+                <th style={{ textAlign: 'right' }}>청구액 (JPY)</th>
+                <th>비율</th>
+                <th>입금 현황</th>
+              </tr>
+            </thead>
+            <tbody>
+              {po.invoices.map((inv) => {
+                const depositTotal = inv.deposits.reduce((sum, d) => sum + Number(d.amountJPY), 0)
+                const depositRate = Number(inv.totalJPY) > 0 ? depositTotal / Number(inv.totalJPY) : 0
+                const invoiceJPY = Math.round(Number(inv.totalJPY) * Number(inv.ratio))
+                return (
+                  <tr key={inv.id}>
+                    <td className="mono text-sm font-medium" style={{ color: 'var(--accent)' }}>
+                      {inv.invoiceNo}
+                    </td>
+                    <td style={{ color: 'var(--text-subtle)' }}>{formatDate(inv.invoiceDate)}</td>
+                    <td className="mono text-right" style={{ color: 'var(--text-muted)' }}>
+                      ¥{Number(inv.totalJPY).toLocaleString()}
+                    </td>
+                    <td className="mono font-semibold text-right" style={{ color: 'var(--text-primary)' }}>
+                      ¥{invoiceJPY.toLocaleString()}
+                    </td>
+                    <td className="mono" style={{ color: 'var(--text-muted)' }}>
+                      {(Number(inv.ratio) * 100).toFixed(0)}%
+                    </td>
+                    <td>
+                      <div className="flex items-center gap-2">
+                        <div className="progress-bar" style={{ width: '60px' }}>
+                          <div className="progress-fill" style={{ width: `${depositRate * 100}%` }} />
+                        </div>
+                        <span className="text-xs mono" style={{ color: 'var(--text-subtle)' }}>
+                          {(depositRate * 100).toFixed(0)}%
+                        </span>
+                      </div>
+                    </td>
+                  </tr>
+                )
+              })}
             </tbody>
           </table>
         </div>

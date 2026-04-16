@@ -103,15 +103,24 @@ model Payment {
   approvedAt  DateTime?
 }
 
+enum InvoiceType {
+  REGULAR    // 일반 청구 (P/O 연결)
+  TRANSPORT  // 운송비 T(N)
+  SAMPLE     // 샘플 대금 S(N)
+}
+
 model Invoice {
   id           String        @id @default(cuid())
-  po           PurchaseOrder @relation(fields: [poId], references: [id], onDelete: Cascade)
-  poId         String
+  po           PurchaseOrder? @relation(fields: [poId], references: [id], onDelete: Cascade)
+  poId         String?
   invoiceNo    String        @unique
   invoiceDate  DateTime
+  invoiceType  InvoiceType   @default(REGULAR)
   unitPriceJPY Decimal
   totalJPY     Decimal
   ratio        Decimal
+  memo         String?
+  sourceFile   String?
   deposits     Deposit[]
 }
 
