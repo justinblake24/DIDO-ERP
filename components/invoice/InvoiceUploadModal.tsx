@@ -229,7 +229,8 @@ export default function InvoiceUploadModal({ onClose, onSuccess }: Props) {
   }, [handleFile])
 
   const handleSave = async () => {
-    if (!form.poId) { setError('PO를 선택해주세요'); return }
+    const needsPo = form.invoiceType === 'REGULAR'
+    if (needsPo && !form.poId) { setError('일반 청구서는 P/O를 선택해주세요'); return }
     setSaving(true)
     setError(null)
 

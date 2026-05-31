@@ -4,6 +4,9 @@ import { parseInvoiceImage } from '@/lib/gemini'
 import { prisma } from '@/lib/prisma'
 import { createServerSupabaseClient } from '@/lib/supabase-server'
 
+// Vercel 서버리스: OCR + Gemini 처리 시간 확보 (기본 10초 → 60초)
+export const maxDuration = 60
+
 /**
  * 청구서 번호에서 invoiceType 자동 감지
  * - T(N) 패턴 → TRANSPORT (운송비)

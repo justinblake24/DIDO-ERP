@@ -21,11 +21,21 @@ export interface InvoiceOcrResult {
 /**
  * Gemini Vision으로 청구서 이미지를 분석해 구조화된 데이터 반환
  */
+/** ms 후 reject하는 타임아웃 Promise */
+function withTimeout<T>(promise: Promise<T>, ms: number, label: string): Promise<T> {
+  const timeout = new Promise<never>((_, reject) =>
+    setTimeout(() => reject(new Error(`${label} 타임아웃 (${ms / 1000}초 초과)`)), ms)
+  )
+  return Promise.race([promise, timeout])
+}
+
 export async function parseInvoiceImage(
   imageBase64: string,
-  mimeType: string
+  mimeType: string,
+  { timeoutMs = 25_000, maxRetries = 2 } = {}
 ): Promise<InvoiceOcrResult> {
-  const model = genAI.getGenerativeModel({ model: 'gemini-3.1-pro-preview' })
+  const modelName = process.env.GEMINI_CHAT_MODEL2 || 'gemini-2.5-pro-preview-05-06'
+  const model = genAI.getGenerativeModel({ model: modelName })
 
   const prompt = `This is a Japanese invoice (御請求書). Extract the following information in JSON format.
 
@@ -56,29 +66,43 @@ Return ONLY valid JSON, no markdown:
   "productSummary": "..."
 }`
 
-  const result = await model.generateContent([
-    {
-      inlineData: {
-        mimeType,
-        data: imageBase64,
-      },
-    },
-    prompt,
-  ])
+  let lastError: Error = new Error('알 수 없는 오류')
 
-  const text = result.response.text().trim()
-  // JSON 블록 추출 (```json ... ``` 감싸진 경우 대비)
-  const jsonMatch = text.match(/\{[\s\S]*\}/)
-  if (!jsonMatch) throw new Error('OCR 결과 파싱 실패: JSON을 찾을 수 없습니다')
+  for (let attempt = 1; attempt <= maxRetries + 1; attempt++) {
+    try {
+      const result = await withTimeout(
+        model.generateContent([
+          { inlineData: { mimeType, data: imageBase64 } },
+          prompt,
+        ]),
+        timeoutMs,
+        `Gemini OCR (시도 ${attempt}/${maxRetries + 1})`
+      )
 
-  const parsed = JSON.parse(jsonMatch[0]) as InvoiceOcrResult
+      const text = result.response.text().trim()
+      // JSON 블록 추출 (```json ... ``` 감싸진 경우 대비)
+      const jsonMatch = text.match(/\{[\s\S]*\}/)
+      if (!jsonMatch) throw new Error('OCR 결과 파싱 실패: JSON을 찾을 수 없습니다')
 
-  // ratio 서버에서 정확히 재계산 (소수점 4자리)
-  if (parsed.totalJPY > 0 && parsed.invoiceJPY > 0) {
-    parsed.ratio = Math.round((parsed.invoiceJPY / parsed.totalJPY) * 10000) / 10000
+      const parsed = JSON.parse(jsonMatch[0]) as InvoiceOcrResult
+
+      // ratio 서버에서 정확히 재계산 (소수점 4자리)
+      if (parsed.totalJPY > 0 && parsed.invoiceJPY > 0) {
+        parsed.ratio = Math.round((parsed.invoiceJPY / parsed.totalJPY) * 10000) / 10000
+      }
+
+      return parsed
+    } catch (err) {
+      lastError = err instanceof Error ? err : new Error(String(err))
+      console.warn(`[Gemini OCR] 시도 ${attempt} 실패:`, lastError.message)
+      if (attempt <= maxRetries) {
+        // 재시도 전 잠시 대기 (1초 × 시도 횟수)
+        await new Promise(res => setTimeout(res, 1000 * attempt))
+      }
+    }
   }
 
-  return parsed
+  throw lastError
 }
 
 export interface AnomalyCheckInput {

@@ -86,6 +86,7 @@ export async function POST(req: NextRequest) {
           invoiceDate: new Date(invoiceDate),
           invoiceType,
           totalJPY,
+          invoiceJPY: body.invoiceJPY ?? null,
           unitPriceJPY,
           ratio,
           memo: memo || null,

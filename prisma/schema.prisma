@@ -53,6 +53,10 @@ model PurchaseOrder {
   payments Payment[]
   invoices Invoice[]
 
+  // 무역 파이프라인 연결
+  tradeCase   TradeCase? @relation(fields: [tradeCaseId], references: [id])
+  tradeCaseId String?
+
   createdBy   User     @relation("CreatedBy", fields: [createdById], references: [id])
   createdById String
   createdAt   DateTime @default(now())
@@ -60,6 +64,7 @@ model PurchaseOrder {
 
   @@index([issueDate, status])
   @@index([vendorId])
+  @@index([tradeCaseId])
 }
 
 enum POStatus {
@@ -110,18 +115,25 @@ enum InvoiceType {
 }
 
 model Invoice {
-  id           String        @id @default(cuid())
+  id           String         @id @default(cuid())
   po           PurchaseOrder? @relation(fields: [poId], references: [id], onDelete: Cascade)
   poId         String?
-  invoiceNo    String        @unique
+  invoiceNo    String         @unique
   invoiceDate  DateTime
-  invoiceType  InvoiceType   @default(REGULAR)
+  invoiceType  InvoiceType    @default(REGULAR)
   unitPriceJPY Decimal
   totalJPY     Decimal
+  invoiceJPY   Decimal?   // 실 청구액 (부분 청구 등)
   ratio        Decimal
   memo         String?
   sourceFile   String?
   deposits     Deposit[]
+
+  // 무역 파이프라인 연결
+  tradeCase   TradeCase? @relation(fields: [tradeCaseId], references: [id])
+  tradeCaseId String?
+
+  @@index([tradeCaseId])
 }
 
 model Deposit {
@@ -166,4 +178,85 @@ model FxRate {
   jpyKrw  Decimal
   source  String   @default("BOK")
   fetched DateTime @default(now())
+}
+
+// ============================================================
+// 무역 파이프라인 (신규 추가)
+// ============================================================
+
+enum TradeCaseStatus {
+  DOCUMENTS_UPLOADED  // 문서 업로드 완료
+  PARSED              // 파싱 완료
+  REVIEWED            // 사람 검토 완료
+  PO_CREATED          // 발주서 저장 완료
+  SHIPPED             // 선적 완료
+  INVOICED            // 청구서 발행 완료
+  PAYMENT_PENDING     // 입금 대기
+  COMPLETED           // 입금 완료
+}
+
+enum DocType {
+  JP_PO        // 일본→한국 発注書 (NH-DH번호)
+  KR_PO_INTL   // 한국→해외 발주서 (DHPO-(I))
+  KR_PO_LOCAL  // 한국 국내 발주서 (DH(L))
+  INVOICE_NOAH // NOAH 청구서 請求書 (DHPI-C(N))
+  SHIPPING_DOC // 선적서류 Inv & P.L (Excel)
+}
+
+// 거래 묶음 — 폴더 하나 = TradeCase 하나
+model TradeCase {
+  id         String          @id @default(cuid())
+  caseName   String          // "C-12_두바이쫀득쿠키"
+  nhDhNumber String?         // 일본 발주번호 (핵심 연결 키)
+  status     TradeCaseStatus @default(DOCUMENTS_UPLOADED)
+  memo       String?
+
+  documents      TradeCaseDocument[]
+  shippingInfo   ShippingInfo?
+  linkedPOs      PurchaseOrder[]
+  linkedInvoices Invoice[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([nhDhNumber])
+  @@index([status])
+}
+
+// 업로드된 원본 파일 & 파싱 결과
+model TradeCaseDocument {
+  id          String    @id @default(cuid())
+  tradeCase   TradeCase @relation(fields: [tradeCaseId], references: [id], onDelete: Cascade)
+  tradeCaseId String
+
+  docType    DocType // 문서 유형
+  docNumber  String? // 추출된 문서번호
+  fileName   String  // 원본 파일명
+  filePath   String  // 서버 저장 경로
+  parsedData Json    // 파싱 결과 전체
+  confidence Float   @default(0) // 매칭 신뢰도 0~100
+  verified   Boolean @default(false) // 사람이 확인했는지
+
+  createdAt DateTime @default(now())
+
+  @@index([tradeCaseId])
+  @@index([docNumber])
+}
+
+// 선적 정보
+model ShippingInfo {
+  id          String    @id @default(cuid())
+  tradeCase   TradeCase @relation(fields: [tradeCaseId], references: [id], onDelete: Cascade)
+  tradeCaseId String    @unique
+
+  portOfLoading   String    // "Incheon" / "Shekou" / "Xiamen"
+  portOfDischarge String    // "Yokohama"
+  carrier         String?   // 선사/선박명
+  containerNos    String[]  // 컨테이너 번호 목록
+  incoterms       String?   // "FOB" / "CIF"
+  etd             DateTime? // 출항일
+  eta             DateTime? // 도착일
+  totalQty        Int?
+  totalWeightKg   Decimal?
+  totalCbm        Decimal?
 }

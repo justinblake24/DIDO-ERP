@@ -31,13 +31,14 @@ export default async function PurchaseOrdersPage({ searchParams }: Props) {
     ]
   }
 
-  const [poList, total] = await Promise.all([
+          const [poList, total] = await Promise.all([
     prisma.purchaseOrder.findMany({
       where,
       include: {
         vendor: { select: { name: true, country: true } },
         items: { select: { productName: true, totalAmount: true, currency: true }, orderBy: { sortOrder: 'asc' } },
         _count: { select: { items: true, payments: true } },
+        tradeCase: { select: { id: true, caseName: true } }, // 파이프라인 연동 정보 포함
       },
       orderBy: { issueDate: 'desc' },
       take: pageSize,
@@ -190,8 +191,15 @@ export default async function PurchaseOrdersPage({ searchParams }: Props) {
                   {/* 모바일: 2행 / 데스크탑: 1행 */}
                   {/* 행 1: PO번호 + 상태 */}
                   <div className="flex items-center justify-between mb-2 md:mb-0 md:hidden">
-                    <div className="mono text-sm font-semibold" style={{ color: 'var(--accent)' }}>
-                      {po.poNumber}
+                    <div className="flex items-center gap-2">
+                      <div className="mono text-sm font-semibold" style={{ color: 'var(--accent)' }}>
+                        {po.poNumber}
+                      </div>
+                      {po.tradeCaseId && (
+                        <span className="text-[10px] px-1.5 py-0.5 rounded bg-blue-500/20 text-blue-400 border border-blue-500/30">
+                          🔗 연동됨
+                        </span>
+                      )}
                     </div>
                     <POStatusBadge status={po.status} />
                   </div>
@@ -222,8 +230,15 @@ export default async function PurchaseOrdersPage({ searchParams }: Props) {
                   <div className="hidden md:flex items-center gap-4">
                     {/* PO Number */}
                     <div style={{ minWidth: '200px' }}>
-                      <div className="mono text-sm font-semibold" style={{ color: 'var(--accent)' }}>
-                        {po.poNumber}
+                      <div className="flex items-center gap-2">
+                        <div className="mono text-sm font-semibold" style={{ color: 'var(--accent)' }}>
+                          {po.poNumber}
+                        </div>
+                        {po.tradeCaseId && (
+                          <span className="text-[10px] px-1.5 py-0.5 rounded bg-blue-500/20 text-blue-400 border border-blue-500/30 flex-shrink-0" title={`무역 파이프라인 연동: ${po.tradeCase?.caseName || ''}`}>
+                            🔗 
+                          </span>
+                        )}
                       </div>
                       <div className="text-xs mt-0.5 mono" style={{ color: 'var(--text-subtle)' }}>
                         {formatDate(po.issueDate)}

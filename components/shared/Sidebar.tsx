@@ -5,7 +5,7 @@ import { usePathname } from 'next/navigation'
 import {
   LayoutDashboard, FileText, Upload, Building2,
   ClipboardList, BarChart3, Shield, Settings,
-  Users, Zap, LogOut, ChevronRight
+  Users, Zap, LogOut, ChevronRight, Anchor
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase'
 import { useRouter } from 'next/navigation'
@@ -16,6 +16,7 @@ const navItems = [
   { href: '/purchase-orders/import', icon: Upload, label: '엑셀 Import' },
   { href: '/vendors', icon: Building2, label: '발주처 관리' },
   { href: '/invoices', icon: ClipboardList, label: '청구 관리' },
+  { href: '/trade-pipeline', icon: Anchor, label: '무역 파이프라인' },
   { href: '/reports', icon: BarChart3, label: '리포트' },
   { href: '/audit', icon: Shield, label: '감사 로그' },
 ]
